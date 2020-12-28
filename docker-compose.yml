@@ -1,0 +1,13 @@
+version: '3.1'
+services:
+    webserver:
+        image: runus:1.0
+        environment:
+            - AIRFLOW__CORE__SQL_ALCHEMY_CONN=sqlite:////usr/local/airflow/db/airflow.db
+        volumes:
+            - ./airflow/dags:/usr/local/airflow/dags
+            - ./airflow/db:/usr/local/airflow/db
+            - ./python/:/runus/python/
+        ports:
+            - "8080:8080"
+        command: webserver

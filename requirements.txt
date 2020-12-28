@@ -1,0 +1,5 @@
+boto3~=1.16.19
+requests~=2.25.0
+psycopg2~=2.8.6
+python-dateutil~=2.8.1
+natasha~=1.4.0

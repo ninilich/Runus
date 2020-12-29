@@ -1,8 +1,8 @@
 """
-Процедура, для загрузки RSS-ленты в виде XML-файла на S3
-Запускается из командной строки, на вход принимает два параметра:
-    - адрес RSS-канада
-    - код источника канала
+Procedure for uploading an RSS-feed as an XML-file to S3
+Runs from the command line, accepts two parameters as input:
+    - address of the RSS-feed
+    - the source code of the channel
 """
 from cfg_settings import AWS_ACCESS_KEY, AWS_SECRET_KEY, S3_BUCKET, REGION_NAME
 import boto3
@@ -13,9 +13,9 @@ from sys import argv
 
 def uploader(url, owner):
     """
-    Функция, для загрузки RSS-ленты в виде XML-файла на S3
-    :param url: адрес RSS-канала
-    :param owner: код источника канала (используется для формирования постфикса имени XML-файла
+    Function for uploading an RSS feed as an XML file to S3
+    :param url: RSS-feed url
+    :param owner: channel source code (used to form the postfix of the XML-file name)
     :return: nothing
     """
     s3 = boto3.resource(

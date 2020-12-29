@@ -1,9 +1,9 @@
 """
-Задачи данного процесса:
-1) считать из S3 файлы с RSS-потоком
-2) распарсить и выделить в них именованные сущности
-3) записать результат в stage-таблицы БД
-4) переместить файлы в другой бакет
+This py-file do:
+1) reads xml-files with RSS-feeds from S3-bucket
+2) analyzes these files and detects Named Entities
+3) saves result into DB
+4) deletes processed files
 """
 
 import psycopg2 as pg
@@ -21,15 +21,13 @@ from cfg_settings import (AWS_ACCESS_KEY, AWS_SECRET_KEY, S3_BUCKET, REGION_NAME
 
 def text_analyze(text):
     """
-    Функция, которая выделяет из текста NER
-    Формат возвращаемых значений - список из кортежей ('Наименование','Тип')
-    Тип согласно документации к модулю natasha
-    :param text: текст для анализа
-    :return: список уникальных кортежей (наименование сущности, тип сущности)
+    Function for detecting named entities from the text
+    :param text: text to analyze and to detect Named Entities
+    :return: list of unique tuples (entity_name, entity_type)
     """
 
     ners = set()
-    doc = Doc(text.strip())  # обрезка пробелов, чтобы natasha не падале с ошибкой
+    doc = Doc(text.strip())  # trim spaces so that "natasha" doesn't fall with an error
 
     # After applying segmenter two new fields appear: sents and tokens
     doc.segment(segmenter)
@@ -56,8 +54,8 @@ def text_analyze(text):
 
 def insert_db(row_list):
     """
-    Функция, записывающая данные в БД
-    :param row_list: список кортежей для записи в БД
+    Function for saving data into DB
+    :param row_list: list of tuples for saving in DB
     :return: nothing
     """
     print('Starting to insert data into database')
@@ -72,11 +70,11 @@ def insert_db(row_list):
 
 def proc_files(rss_bucket):
     """
-    Функция, обработки файлов: читает данные из бакета, вызывает text_analyze для выделения NER,
-    затем преобразуюет результаты анализа в список кортежей и вставляющет их в БД
-    Вставка в БД производится для каждого файла.
-    :param rss_bucket: имя бакета с файлами
-    :return: processed_file_list: список обработанных файлов
+    File processing function: reads data from the bucket, calls test_analyze to detect Names Entities,
+    then it converts the analysis results into a list of tuples and inserts them into the database.
+    Insertion into the database is performed for each file.
+    :param rss_bucket: S3-backer name with files
+    :return: processed_file_list: list of names of processed files
     """
     processed_file_list = []
 
@@ -86,14 +84,14 @@ def proc_files(rss_bucket):
         data_list = []
         xml_tree = ET.fromstring(file.get()['Body'].read())
         print(f'Processing file {file.key}...')
-        cnt = 0  # счетчик для логирования
+        cnt = 0  # for logging
 
         for element in xml_tree.findall("channel/item"):
             guid = element.find("guid")
             pub_date = element.find("pubDate")
             description = element.find("description")
             cnt += 1
-            try:    # Иногда в RSS-лентах есь ошибки в формате :(
+            try:    # Sometimes RSS feeds have errors in the format :(
                 for item in text_analyze(description.text):
                     entity_nm, entity_type = item
                     data_item = (news_src, parse(pub_date.text), entity_nm, entity_type, guid.text)
@@ -108,13 +106,14 @@ def proc_files(rss_bucket):
 
 def archive_files(s3, file_list):
     """
-    Функция для перемещения обработанных файлов в бакет с архивными файлами
-    :param file_list: список файлов для перемещения в архив
-    :param s3: объект boto3.resource
+    This function will move the processed files to the package with the archive file
+    Used during debugging, not used now
+    :param file_list: list of file to move
+    :param s3: object boto3.resource
     :return: nothing
     """
 
-    cnt = 0  # счетчик для логирования
+    cnt = 0  # for logging
     for file_name in file_list:
         src = {'Bucket': S3_BUCKET, 'Key': file_name}
         s3.meta.client.copy(src, S3_ARCHIVE_BUCKET, file_name)
@@ -125,14 +124,14 @@ def archive_files(s3, file_list):
 
 def delete_files(s3, bucket_name, file_list):
     """
-    Функция удаления обработанных файлов
-    :param s3: объект boto3.resource
-    :param bucket_name: бакет, из которого надо удалить файлы
-    :param file_list: список файлов к удалению
+    Function for deleting processed files
+    :param s3: object boto3.resource
+    :param bucket_name: S3-bucket, from which files will be deleted
+    :param file_list: list of filenames to delete
     :return: nothing
     """
 
-    cnt = 0  # счетчик для логирования
+    cnt = 0  # for logging
     for file_name in file_list:
         s3.Object(bucket_name, file_name).delete()
         cnt += 1

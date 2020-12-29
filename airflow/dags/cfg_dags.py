@@ -1,6 +1,6 @@
 from datetime import datetime
 
-
+# List of feeds with aliases and schedule interval
 FEEDS_LIST = [
     ("https://lenta.ru/rss/", "LNT", "0 4 * * *"),
     ("https://echo.msk.ru/news.rss", "EHO", "20 1-23/2 * * *"),
@@ -10,4 +10,5 @@ FEEDS_LIST = [
     ('https://news.yandex.ru/business.rss', "YEC", "15 4,16 * * *")
 ]
 
+# Start date for DAGs
 START_DATE = datetime(2020, 12, 21)

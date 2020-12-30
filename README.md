@@ -10,7 +10,16 @@
 - Использование open source продуктов
 - Модульность (возможность разработки небольшими частями)
 
-TBD
+Общая функциональная схема решения представлена на рисунке ниже:
+![Функциональная схема](https://github.com/ninilich/Runus/raw/master/diagram-1.png)
+
+Перечень используемых облачных сервисов:
+- AWS S3 для временного хранения XML-файлов
+- GCP SQL для развертывания БД Postgres
+- GCP Compute Engine в качестве VPS
+- На GCP Compute Engine в докер-контейнерах запущены Airflow, Python и Metabase 
+
+![Инфраструктурная схема](https://github.com/ninilich/Runus/raw/master/diagram-2.png)
 
 # Инструкция по развертыванию
 1. Клонировать репозиторий

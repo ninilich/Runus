@@ -19,7 +19,7 @@
 - GCP Compute Engine в качестве VPS
 - На GCP Compute Engine в докер-контейнерах запущены Airflow, Python и Metabase 
 
-![Инфраструктурная схема](https://github.com/ninilich/Runus/raw/master/diagram-2.png)
+Но можно развернуть и все локально без переписывания кода (за исключением использования AWS S3)
 
 # Инструкция по развертыванию
 1. Клонировать репозиторий
